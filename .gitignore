@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+venv/
+*.log
+*.sqlite
+*.tar.gz
+*.zip

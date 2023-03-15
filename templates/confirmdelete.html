@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Purge all Data?</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  </head>
+  <body>
+    {% include 'navbar.html' %}
+    <div class="container">
+      <div class="container">
+      <h1 class="my-4">Purge all Data?</h1>
+      <form method="post">
+        <div class="form-group">
+          <label for="confirmation">Please Confirm You Want to Delete ALL Data!</label>
+          <select id="confirmation" name="confirmation" class="form-control">
+              <option value="N">NO</option>
+              <option value="Y">YES</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-danger">Submit</button>
+      </form>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  </body>
+</html>
