@@ -4,9 +4,25 @@ from datetime import date, datetime
 from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey, delete
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required, current_user
+from werkzeug.security import generate_password_hash, check_password_hash
+import os
+
+login_manager = LoginManager()
+login_manager.login_view = 'login'
 
 Base = declarative_base()
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
+
+login_manager.init_app(app)
+
+
+class User(UserMixin, Base):
+    __tablename__ = 'users'
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True)
+    password = Column(String)
 
 class LiftLog(Base):
 
@@ -17,6 +33,7 @@ class LiftLog(Base):
     weight = Column(Integer)
     sets = Column(Integer)
     reps = Column(Integer)
+    user_id = Column(Integer, ForeignKey('users.id'))
 
 def sessionfactory():
     engine = create_engine('sqlite:///lifttracker.db')
@@ -25,16 +42,23 @@ def sessionfactory():
     session = Session()
     return session
 
-def new_entry(lift, weight, sets, reps, date):
+@login_manager.user_loader
+def load_user(user_id):
     session = sessionfactory()
-    newlift = LiftLog(date=date, lift=lift, weight=weight, sets=sets, reps=reps)
+    user = session.query(User).get(int(user_id))
+    session.close()
+    return user
+
+def new_entry(user_id, lift, weight, sets, reps, date):
+    session = sessionfactory()
+    newlift = LiftLog(user_id=user_id, date=date, lift=lift, weight=weight, sets=sets, reps=reps)
     session.add(newlift)
     session.commit()
     session.close()
     
-def printlog():
+def printlog(user_id):
     session = sessionfactory()
-    liftlog = session.query(LiftLog).all()
+    liftlog = session.query(LiftLog).filter_by(user_id=user_id).all()
     logfile = []
     for lift in liftlog:
         logline = {
@@ -56,11 +80,17 @@ def cleartable(confirmation):
         session.close()
 
 @app.route("/")
+@login_required
 def main():
-    data = printlog()
-    return render_template('index.html', data=data)
+    if current_user.is_authenticated:
+        user_id = current_user.id
+        data = printlog(user_id)
+        return render_template('index.html', data=data)
+    else:
+        return redirect(url_for('register'))
 
 @app.route("/addentry", methods=['POST', 'GET'])
+@login_required
 def addentry():
     if request.method == 'POST':
         lift = request.form['lift']
@@ -72,11 +102,13 @@ def addentry():
             date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
         else:
             date_obj = date.today()
-        new_entry(lift, weight, reps, sets, date_obj)
+        user_id = current_user.id
+        new_entry(user_id, lift, weight, reps, sets, date_obj)
         return redirect(url_for('main'))
     return render_template('addentry.html')
 
 @app.route("/deletetable", methods=['POST', 'GET'])
+@login_required
 def killtable():
     if request.method == 'POST':
         confirmation = request.form['confirmation']
@@ -86,6 +118,42 @@ def killtable():
         else:
             return "Table Not Deleted: You must confirm you really want to delete all data!"
     return render_template('confirmdelete.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        session = sessionfactory()
+        username = request.form['username']
+        password = request.form['password']
+        hashed_password = generate_password_hash(password)
+        new_user = User(username=username, password=hashed_password)
+        session.add(new_user)
+        session.commit()
+        session.close()
+        return redirect(url_for('login'))
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        session = sessionfactory()
+        username = request.form['username']
+        password = request.form['password']
+        user = session.query(User).filter_by(username=username).first()
+        session.close()
+        if user and check_password_hash(user.password, password):
+            login_user(user)
+            return redirect(url_for('main'))
+        else:
+            return "Invalid username or password"
+    return render_template('login.html')
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
 
 if __name__ == "__main__":
