@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lift Charts</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    {% include 'navbar.html' %}
+    <div class="container">
+      <h1 class="my-4">Lift Charts</h1>
+      <div id="charts-container"></div>
+        {% for lift in lift_data %}
+        <div class="card mt-4">
+        <div class="card-body">
+            <h5 class="card-title">{{ lift.lift_name }}</h5>
+            <canvas id="{{ lift.lift_name }}-chart" class="chart"></canvas>
+        </div>
+        </div>
+        {% endfor %}
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        function createChart(ctx, labels, data) {
+            return new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                label: 'Weight',
+                data: data,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                y: {
+                    beginAtZero: true
+                }
+                }
+            }
+            });
+        }
+
+        // Loop through each lift data and create the chart
+        const liftData = {{ lift_data | tojson }};
+        liftData.forEach(lift => {
+            const ctx = document.getElementById(`${lift.lift_name}-chart`).getContext('2d');
+            createChart(ctx, lift.dates, lift.weights);
+        });
+    </script>
+  </body>
+</html>

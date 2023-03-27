@@ -6,7 +6,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-import os
+import os, json
 
 login_manager = LoginManager()
 login_manager.login_view = 'login'
@@ -56,6 +56,31 @@ def new_entry(user_id, lift, weight, sets, reps, date):
     session.commit()
     session.close()
     
+def get_lift_data(user_id):
+    session = sessionfactory()
+    lift_data = session.query(LiftLog).filter_by(user_id=user_id).order_by(LiftLog.date).all()
+    session.close()
+
+    grouped_data = {}
+    for lift in lift_data:
+        if lift.lift not in grouped_data:
+            grouped_data[lift.lift] = {
+                'dates': [],
+                'weights': []
+            }
+        grouped_data[lift.lift]['dates'].append(lift.date)
+        grouped_data[lift.lift]['weights'].append(lift.weight)
+
+    result = []
+    for lift_name, data in grouped_data.items():
+        result.append({
+            'lift_name': lift_name,
+            'dates': data['dates'],
+            'weights': data['weights']
+        })
+
+    return result
+
 def printlog(user_id):
     session = sessionfactory()
     liftlog = session.query(LiftLog).filter_by(user_id=user_id).all()
@@ -148,6 +173,15 @@ def login():
             return "Invalid username or password"
     return render_template('login.html')
 
+@app.route("/liftcharts")
+@login_required
+def liftcharts():
+    if current_user.is_authenticated:
+        user_id = current_user.id
+        lift_data = get_lift_data(user_id)
+        return render_template('liftcharts.html', lift_data=lift_data)
+    else:
+        return redirect(url_for('register'))
 
 @app.route('/logout')
 @login_required
