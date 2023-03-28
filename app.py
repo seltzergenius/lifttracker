@@ -1,4 +1,3 @@
-# import sqlite3
 from flask import Flask, render_template, request, redirect, url_for
 from datetime import date, datetime
 from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey, delete
@@ -6,14 +5,17 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-import os, json
+from werkzeug.middleware.proxy_fix import ProxyFix
+import os
 
 login_manager = LoginManager()
 login_manager.login_view = 'login'
 
 Base = declarative_base()
+
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = "tempshit"#os.environ.get("FLASK_SECRET_KEY")
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
 login_manager.init_app(app)
 
@@ -25,7 +27,6 @@ class User(UserMixin, Base):
     password = Column(String)
 
 class LiftLog(Base):
-
     __tablename__ = 'liftlog'
     id = Column(Integer, primary_key=True)
     date = Column(Date)
@@ -112,7 +113,7 @@ def main():
         data = printlog(user_id)
         return render_template('index.html', data=data)
     else:
-        return redirect(url_for('register'))
+        return redirect(url_for('login'))
 
 @app.route("/addentry", methods=['POST', 'GET'])
 @login_required

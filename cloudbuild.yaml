@@ -1,0 +1,7 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/liftlog-381914/liftlog:$SHORT_SHA', '.']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/liftlog-381914/liftlog:$SHORT_SHA']
+- name: 'gcr.io/cloud-builders/gcloud'
+  args: ['run', 'deploy', 'liftlog', '--image', 'gcr.io/liftlog-381914/liftlog:$SHORT_SHA', '--region', 'us-east1', '--platform', 'managed', '--allow-unauthenticated']
