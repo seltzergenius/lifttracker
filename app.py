@@ -23,14 +23,14 @@ login_manager.init_app(app)
 class User(UserMixin, Base):
     __tablename__ = 'users'
     id = Column(Integer, primary_key=True)
-    username = Column(String, unique=True)
-    password = Column(String)
+    username = Column(String(32), unique=True)
+    password = Column(String(32))
 
 class LiftLog(Base):
     __tablename__ = 'liftlog'
     id = Column(Integer, primary_key=True)
     date = Column(Date)
-    lift = Column(String)
+    lift = Column(String(64))
     weight = Column(Integer)
     sets = Column(Integer)
     reps = Column(Integer)
