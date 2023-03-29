@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <title>Lift Log</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .editable {
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+        }
+    </style>
+    
 </head>
 <body>
     {% include 'navbar.html' %}
@@ -60,22 +67,25 @@
 
                 // Toggle readonly attribute for the inputs
                 inputs.forEach(input => {
-                    if (input.hasAttribute('readonly')) {
+                    if (input.getAttribute('readonly') === "") {
                         input.removeAttribute('readonly');
+                        input.classList.add('editable');
                     } else {
                         input.setAttribute('readonly', '');
+                        input.classList.remove('editable');
                     }
                 });
 
                 // Toggle disabled attribute for the lift select
                 liftSelect.disabled = !liftSelect.disabled;
+                liftSelect.classList.toggle('editable');
 
                 // Toggle the save button visibility
                 const saveButton = row.querySelector('.save-btn');
                 saveButton.style.display = saveButton.style.display === 'none' ? '' : 'none';
             });
         });
-    
+
         document.querySelectorAll('.save-btn').forEach(saveButton => {
             saveButton.addEventListener('click', async (event) => {
                 const row = event.target.closest('tr');
