@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
+from google.cloud import secretmanager
 import os
 
 login_manager = LoginManager()
@@ -14,7 +15,7 @@ login_manager.login_view = 'login'
 Base = declarative_base()
 
 app = Flask(__name__)
-app.secret_key = "tempshit"#os.environ.get("FLASK_SECRET_KEY")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
 login_manager.init_app(app)
@@ -37,11 +38,15 @@ class LiftLog(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
 
 def sessionfactory():
-    engine = create_engine('sqlite:///lifttracker.db')
+    db_user = os.environ.get("DB_USER")
+    db_password = os.environ.get("DB_PASSWORD")
+    db_connection = f"mysql+mysqldb://{db_user}:{db_password}@/{'liftlog'}?unix_socket=/cloudsql/liftlog-381914:us-east1:liftlog"
+    engine = create_engine(db_connection, echo=True)
     Session = sessionmaker(bind=engine)
     Base.metadata.create_all(engine)
     session = Session()
     return session
+
 
 @login_manager.user_loader
 def load_user(user_id):
