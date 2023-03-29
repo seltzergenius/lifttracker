@@ -10,6 +10,11 @@
     <div class="container">
       <h1 class="my-4">Lift Dashboard</h1>
       <div class="row">
+        <select id="workout-dropdown" class="form-control mb-3">
+          <option value="">Choose a workout</option>
+          <option value="A">Workout A</option>
+          <option value="B">Workout B</option>
+      </select>      
         <div class="col-md-6">
           <h5>Weekly Lifts:</h5>
           <ul>
@@ -60,6 +65,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
+
         function createChart(ctx, labels, data) {
             const minWeight = Math.min(...data) - 10;
             const dateObjects = labels.map(label => new Date(label));
@@ -94,6 +100,42 @@
                 }
             });
         }
+        function displayWorkout(workout) {
+          const workoutA = ['SQUAT', 'BENCHPRESS', 'ROW'];
+          const workoutB = ['SQUAT', 'OHP', 'DEADLIFT'];
+          const lifts = workout === 'A' ? workoutA : workoutB;
+
+          // Update the lift dropdown
+          const liftDropdown = document.getElementById('lift-dropdown');
+          liftDropdown.innerHTML = `
+              <option value="">Choose a lift</option>
+              ${lifts.map(lift => `<option value="${lift}">${lift}</option>`).join('')}
+          `;
+
+          // Update the charts container
+          const chartsContainer = document.getElementById('charts-container');
+          chartsContainer.innerHTML = `
+              ${lifts.map(lift => {
+                  const liftData = liftData.find(item => item.lift_name === lift);
+                  return `
+                      <div class="card mt-4">
+                          <div class="card-body">
+                              <h5 class="card-title">${lift}</h5>
+                              <canvas id="${lift}-chart" class="chart"></canvas>
+                          </div>
+                      </div>
+                  `;
+              }).join('')}
+          `;
+
+          // Create charts for the displayed lifts
+          lifts.forEach(lift => {
+              const liftData = liftData.find(item => item.lift_name === lift);
+              const ctx = document.getElementById(`${lift}-chart`).getContext('2d');
+              createChart(ctx, liftData.dates, liftData.weights);
+          });
+      }
+
         // Loop through each lift data and create the chart
         const liftData = {{ lift_data | tojson }};
         liftData.forEach(lift => {
