@@ -109,13 +109,17 @@ def cleartable(confirmation):
         session.commit()
         session.close()
 
+def liftdashboard(user_id):
+    lift_data = get_lift_data(user_id)
+    return lift_data
+
 @app.route("/")
 @login_required
 def main():
     if current_user.is_authenticated:
         user_id = current_user.id
-        data = printlog(user_id)
-        return render_template('index.html', data=data)
+        lift_data = liftdashboard(user_id)
+        return render_template('liftdashboard.html', lift_data=lift_data)
     else:
         return redirect(url_for('login'))
 
@@ -166,6 +170,7 @@ def update_entry():
         return 'Invalid request', 400
 
 # this was for testing I don't want this live lol
+
 # @app.route("/deletetable", methods=['POST', 'GET'])
 # @login_required
 # def killtable():
@@ -206,6 +211,13 @@ def login():
         else:
             return "Invalid username or password"
     return render_template('login.html')
+
+@app.route('/logs')
+@login_required
+def logs():
+    user_id = current_user.id
+    data = printlog(user_id)
+    return render_template('logs.html', data=data)
 
 @app.route("/liftcharts")
 @login_required

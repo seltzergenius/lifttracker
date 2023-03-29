@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Lift Log</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .editable {
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+        }
+    </style>
+    
+</head>
+<body>
+    {% include 'navbar.html' %}
+    <div class="container">
+    <div class="container">
+        <h1 class="my-4">Lift Log</h1>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Lift</th>
+                    <th scope="col">Weight</th>
+                    <th scope="col">Sets</th>
+                    <th scope="col">Reps</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for logline in data %}
+                    <tr>
+                        <td><input type="date" class="form-control" value="{{ logline.date }}" disabled></td>
+                        <td>
+                            <select class="form-control lift-select" disabled>
+                                <option value="SQUAT" {% if logline.lift == "SQUAT" %}selected{% endif %}>SQUAT</option>
+                                <option value="OHP" {% if logline.lift == "OHP" %}selected{% endif %}>OHP</option>
+                                <option value="DEADLIFT" {% if logline.lift == "DEADLIFT" %}selected{% endif %}>DEADLIFT</option>
+                                <option value="ROW" {% if logline.lift == "ROW" %}selected{% endif %}>ROW</option>
+                                <option value="BENCHPRESS" {% if logline.lift == "BENCHPRESS" %}selected{% endif %}>BENCHPRESS</option>
+                            </select>
+                        </td>
+                        <td><input type="number" class="form-control" value="{{ logline.weight }}" disabled></td>
+                        <td><input type="number" class="form-control" value="{{ logline.sets }}" disabled></td>
+                        <td><input type="number" class="form-control" value="{{ logline.reps }}" disabled></td>
+                        <td>
+                            <button class="btn btn-primary edit-btn">Edit</button>
+                            <button class="btn btn-success save-btn" style="display:none;">Save</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.querySelectorAll('.edit-btn').forEach(editButton => {
+            editButton.addEventListener('click', event => {
+                const row = event.target.parentElement.parentElement;
+                const inputs = row.querySelectorAll('input');
+                const liftSelect = row.querySelector('.lift-select');
+
+                // Toggle disabled attribute for the inputs
+                inputs.forEach(input => {
+                    input.disabled = !input.disabled;
+                    input.classList.toggle('editable');
+                });
+
+                // Toggle disabled attribute for the lift select
+                liftSelect.disabled = !liftSelect.disabled;
+                liftSelect.classList.toggle('editable');
+
+                // Toggle the save button visibility
+                const saveButton = row.querySelector('.save-btn');
+                saveButton.style.display = saveButton.style.display === 'none' ? '' : 'none';
+            });
+        });
+
+        document.querySelectorAll('.save-btn').forEach(saveButton => {
+            saveButton.addEventListener('click', async (event) => {
+                const row = event.target.closest('tr');
+                const inputs = row.querySelectorAll('input');
+                const liftSelect = row.querySelector('.lift-select'); // Add this line
+                const date = inputs[0].value;
+                const lift = liftSelect.value; // Modify this line
+                const weight = inputs[1].value;
+                const sets = inputs[2].value;
+                const reps = inputs[3].value;
+
+                // Update the database
+                const response = await fetch('/updateentry', {
+                    method: 'POST',
+                    body: JSON.stringify({ date, lift, weight, sets, reps }),
+                    headers: { 'Content-Type': 'application/json' },
+                });
+
+                if (response.ok) {
+                    // Disable the input fields and hide the save button
+                    inputs.forEach(input => {
+                        input.disabled = true;
+                    });
+                    event.target.style.display = 'none';
+                } else {
+                    alert('An error occurred while updating the entry. Please try again.');
+                }
+            });
+        });
+
+</script>
+</body>
+</html>
