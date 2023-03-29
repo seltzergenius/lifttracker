@@ -25,8 +25,16 @@
                 {% for logline in data %}
                     <tr>
                         <td><input type="date" class="form-control" value="{{ logline.date }}" disabled></td>
-                        <td><input type="text" class="form-control" value="{{ logline.lift }}" disabled></td>
-                        <td><input type="number" class="form-control" value="{{ logline.weight }}" disabled> lbs</td>
+                        <td>
+                            <select class="form-control lift-select" disabled>
+                                <option value="SQUAT" {% if logline.lift == "SQUAT" %}selected{% endif %}>SQUAT</option>
+                                <option value="OHP" {% if logline.lift == "OHP" %}selected{% endif %}>OHP</option>
+                                <option value="DEADLIFT" {% if logline.lift == "DEADLIFT" %}selected{% endif %}>DEADLIFT</option>
+                                <option value="ROW" {% if logline.lift == "ROW" %}selected{% endif %}>ROW</option>
+                                <option value="BENCHPRESS" {% if logline.lift == "BENCHPRESS" %}selected{% endif %}>BENCHPRESS</option>
+                            </select>
+                        </td>
+                        <td><input type="number" class="form-control" value="{{ logline.weight }}" disabled></td>
                         <td><input type="number" class="form-control" value="{{ logline.sets }}" disabled></td>
                         <td><input type="number" class="form-control" value="{{ logline.reps }}" disabled></td>
                         <td>
@@ -45,13 +53,26 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         document.querySelectorAll('.edit-btn').forEach(editButton => {
-            editButton.addEventListener('click', (event) => {
-                const row = event.target.closest('tr');
-                row.querySelectorAll('input').forEach(input => {
-                    input.disabled = !input.disabled;
+            editButton.addEventListener('click', event => {
+                const row = event.target.parentElement.parentElement;
+                const inputs = row.querySelectorAll('input');
+                const liftSelect = row.querySelector('.lift-select');
+
+                // Toggle readonly attribute for the inputs
+                inputs.forEach(input => {
+                    if (input.hasAttribute('readonly')) {
+                        input.removeAttribute('readonly');
+                    } else {
+                        input.setAttribute('readonly', '');
+                    }
                 });
+
+                // Toggle disabled attribute for the lift select
+                liftSelect.disabled = !liftSelect.disabled;
+
+                // Toggle the save button visibility
                 const saveButton = row.querySelector('.save-btn');
-                saveButton.style.display = saveButton.style.display === 'none' ? 'block' : 'none';
+                saveButton.style.display = saveButton.style.display === 'none' ? '' : 'none';
             });
         });
     
