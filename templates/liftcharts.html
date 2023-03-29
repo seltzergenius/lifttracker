@@ -24,29 +24,39 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         function createChart(ctx, labels, data) {
+            const minWeight = Math.min(...data) - 10;
+            const dateObjects = labels.map(label => new Date(label));
+            const stepSize = Math.ceil(dateObjects.length / 10);
+            const simplifiedLabels = dateObjects.map((label, index) => {
+                if (index % stepSize === 0) {
+                    return label.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
+                } else {
+                    return '';
+                }
+            });
+
             return new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                label: 'Weight',
-                data: data,
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1,
-                fill: true
-                }]
-            },
-            options: {
-                scales: {
-                y: {
-                    beginAtZero: true
+                type: 'line',
+                data: {
+                    labels: simplifiedLabels,
+                    datasets: [{
+                        label: 'Weight',
+                        data: data,
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            min: minWeight
+                        }
+                    }
                 }
-                }
-            }
             });
         }
-
         // Loop through each lift data and create the chart
         const liftData = {{ lift_data | tojson }};
         liftData.forEach(lift => {
