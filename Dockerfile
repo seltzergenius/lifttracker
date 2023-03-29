@@ -8,7 +8,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install dev headers/libs for mysql
-RUN apt-get update && apt-get install -y default-libmysqlclient-dev
+RUN apt-get update && apt-get install -y build-essential libmariadb-dev default-libmysqlclient-dev
 
 # Install the required packages
 RUN pip install --no-cache-dir -r requirements.txt
