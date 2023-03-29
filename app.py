@@ -137,17 +137,46 @@ def addentry():
         return redirect(url_for('main'))
     return render_template('addentry.html')
 
-@app.route("/deletetable", methods=['POST', 'GET'])
+@app.route("/updateentry", methods=['POST'])
 @login_required
-def killtable():
-    if request.method == 'POST':
-        confirmation = request.form['confirmation']
-        if confirmation == "Y":
-            cleartable(confirmation)
-            return redirect(url_for('main'))
+def update_entry():
+    if request.is_json:
+        data = request.get_json()
+        date = datetime.strptime(data['date'], "%Y-%m-%d").date()
+        lift = data['lift']
+        weight = int(data['weight'])
+        sets = int(data['sets'])
+        reps = int(data['reps'])
+        user_id = current_user.id
+
+        # Update the entry in the database
+        session = sessionfactory()
+        entry = session.query(LiftLog).filter_by(user_id=user_id, date=date, lift=lift).first()
+        if entry:
+            entry.weight = weight
+            entry.sets = sets
+            entry.reps = reps
+            session.commit()
+            session.close()
+            return '', 200
         else:
-            return "Table Not Deleted: You must confirm you really want to delete all data!"
-    return render_template('confirmdelete.html')
+            session.close()
+            return 'Entry not found', 400
+    else:
+        return 'Invalid request', 400
+
+# this was for testing I don't want this live lol
+# @app.route("/deletetable", methods=['POST', 'GET'])
+# @login_required
+# def killtable():
+#     if request.method == 'POST':
+#         confirmation = request.form['confirmation']
+#         if confirmation == "Y":
+#             cleartable(confirmation)
+#             return redirect(url_for('main'))
+#         else:
+#             return "Table Not Deleted: You must confirm you really want to delete all data!"
+#     return render_template('confirmdelete.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():

@@ -24,11 +24,15 @@
             <tbody>
                 {% for logline in data %}
                     <tr>
-                        <td>{{ logline.date }}</td>
-                        <td>{{ logline.lift }}</td>
-                        <td>{{ logline.weight }} lbs</td>
-                        <td>{{ logline.sets }}</td>
-                        <td>{{ logline.reps }}</td>
+                        <td><input type="date" class="form-control" value="{{ logline.date }}" disabled></td>
+                        <td><input type="text" class="form-control" value="{{ logline.lift }}" disabled></td>
+                        <td><input type="number" class="form-control" value="{{ logline.weight }}" disabled> lbs</td>
+                        <td><input type="number" class="form-control" value="{{ logline.sets }}" disabled></td>
+                        <td><input type="number" class="form-control" value="{{ logline.reps }}" disabled></td>
+                        <td>
+                            <button class="btn btn-primary edit-btn">Edit</button>
+                            <button class="btn btn-success save-btn" style="display:none;">Save</button>
+                        </td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -39,5 +43,46 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.querySelectorAll('.edit-btn').forEach(editButton => {
+            editButton.addEventListener('click', (event) => {
+                const row = event.target.closest('tr');
+                row.querySelectorAll('input').forEach(input => {
+                    input.disabled = !input.disabled;
+                });
+                const saveButton = row.querySelector('.save-btn');
+                saveButton.style.display = saveButton.style.display === 'none' ? 'block' : 'none';
+            });
+        });
+    
+        document.querySelectorAll('.save-btn').forEach(saveButton => {
+            saveButton.addEventListener('click', async (event) => {
+                const row = event.target.closest('tr');
+                const inputs = row.querySelectorAll('input');
+                const date = inputs[0].value;
+                const lift = inputs[1].value;
+                const weight = inputs[2].value;
+                const sets = inputs[3].value;
+                const reps = inputs[4].value;
+    
+                // Update the database
+                const response = await fetch('/updateentry', {
+                    method: 'POST',
+                    body: JSON.stringify({ date, lift, weight, sets, reps }),
+                    headers: { 'Content-Type': 'application/json' },
+                });
+    
+                if (response.ok) {
+                    // Disable the input fields and hide the save button
+                    inputs.forEach(input => {
+                        input.disabled = true;
+                    });
+                    event.target.style.display = 'none';
+                } else {
+                    alert('An error occurred while updating the entry. Please try again.');
+                }
+            });
+        });
+</script>
 </body>
 </html>
