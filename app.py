@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from datetime import date, datetime
 from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey, delete
 from sqlalchemy.ext.declarative import declarative_base
@@ -127,18 +127,19 @@ def main():
 @login_required
 def addentry():
     if request.method == 'POST':
-        lift = request.form['lift']
-        weight = request.form['weight']
-        reps = request.form['reps']
-        sets = request.form['sets']
-        date_str = request.form.get('date', None)
+        data = request.get_json()
+        lift = data['lift']
+        weight = data['weight']
+        reps = data['reps']
+        sets = data['sets']
+        date_str = data.get('date', None)
         if date_str:
             date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
         else:
             date_obj = date.today()
         user_id = current_user.id
         new_entry(user_id, lift, weight, reps, sets, date_obj)
-        return redirect(url_for('main'))
+        return jsonify({'status': 'success'})
     return render_template('addentry.html')
 
 @app.route("/updateentry", methods=['POST'])
