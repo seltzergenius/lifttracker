@@ -65,15 +65,10 @@
                 const inputs = row.querySelectorAll('input');
                 const liftSelect = row.querySelector('.lift-select');
 
-                // Toggle readonly attribute for the inputs
+                // Toggle disabled attribute for the inputs
                 inputs.forEach(input => {
-                    if (input.getAttribute('readonly') === "") {
-                        input.removeAttribute('readonly');
-                        input.classList.add('editable');
-                    } else {
-                        input.setAttribute('readonly', '');
-                        input.classList.remove('editable');
-                    }
+                    input.disabled = !input.disabled;
+                    input.classList.toggle('editable');
                 });
 
                 // Toggle disabled attribute for the lift select
