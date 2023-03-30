@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
+from flask_wtf import CSRFProtect
 import os
 
 login_manager = LoginManager()
@@ -14,6 +15,7 @@ login_manager.login_view = 'login'
 Base = declarative_base()
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
