@@ -128,6 +128,7 @@ def main():
 def addentry():
     if request.method == 'POST':
         data = request.get_json()
+        print(f"Data received: {data}")
         lift = data['lift']
         weight = data['weight']
         reps = data['reps']
