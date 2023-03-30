@@ -71,26 +71,27 @@
         }
 
         function createLiftEntryForm(liftName) {
-            return `
-                <form class="lift-session-form mb-4" data-lift="${liftName}">
-                    <h5>${liftName}</h5>
-                    <div class="form-group">
-                        <label for="${liftName}-weight">Weight:</label>
-                        <input type="number" class="form-control" id="${liftName}-weight" name="weight">
-                    </div>
-                    <div class="form-group">
-                        <label for="${liftName}-reps">Reps:</label>
-                        <input type="number" class="form-control" id="${liftName}-reps" name="reps">
-                    </div>
-                    <div class="form-group">
-                        <label for="${liftName}-sets">Sets:</label>
-                        <input type="number" class="form-control" id="${liftName}-sets" name="sets">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Add Entry</button>
-                    <div class="success-message" style="display: none;"></div>
-                </form>
-            `;
-        }
+        return `
+            <form class="lift-session-form mb-4" data-lift="${liftName}">
+                <h5>${liftName}</h5>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-group">
+                    <label for="${liftName}-weight">Weight:</label>
+                    <input type="number" class="form-control" id="${liftName}-weight" name="weight">
+                </div>
+                <div class="form-group">
+                    <label for="${liftName}-reps">Reps:</label>
+                    <input type="number" class="form-control" id="${liftName}-reps" name="reps">
+                </div>
+                <div class="form-group">
+                    <label for="${liftName}-sets">Sets:</label>
+                    <input type="number" class="form-control" id="${liftName}-sets" name="sets">
+                </div>
+                <button type="submit" class="btn btn-primary">Add Entry</button>
+            </form>
+        `;
+    }
+
 
         function updateLiftFormsAndCharts(workoutLifts) {
             const liftEntryFormsContainer = document.getElementById('lift-entry-forms');
@@ -129,7 +130,8 @@
                             }),
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Accept': 'application/json'
+                                'Accept': 'application/json',
+                                'X-CSRFToken': this.querySelector('input[name="csrf_token"]').value
                             },
                             credentials: 'same-origin'
                         }).then(response => {

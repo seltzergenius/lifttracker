@@ -15,6 +15,7 @@
     <div class="container-fluid custom-container">
       <h1 class="my-4">Add Entry</h1>
       <form method="post">
+        {{ form.csrf_token }}
         <div class="form-group">
         <label for="date">Date (defaults to today):</label>
         <input type="date" id="date" name="date" class="form-control" value="{{ current_date }}">
