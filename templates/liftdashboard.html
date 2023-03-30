@@ -15,59 +15,28 @@
           <option value="A">Workout A</option>
           <option value="B">Workout B</option>
       </select>      
-        <div class="col-md-6">
-          <h5>Weekly Lifts:</h5>
-          <ul>
-            {% for lift in ["deadlift", "ohp", "squat"] %}
-            <li>{{ lift }}</li>
-            {% endfor %}
-          </ul>
-          <h5>Select a lift:</h5>
-          <select id="lift-dropdown" class="form-control mb-3">
-            <option value="">Choose a lift</option>
-            {% for lift in ["deadlift", "ohp", "squat"] %}
-            <option value="{{ lift }}">{{ lift }}</option>
-            {% endfor %}
-          </select>
-          <form id="lift-session-form" style="display: none;">
-            <h5 id="selected-lift"></h5>
-            <div class="form-group">
-              <label for="weight">Weight:</label>
-              <input type="number" class="form-control" id="weight" name="weight">
-            </div>
-            <div class="form-group">
-              <label for="reps">Reps:</label>
-              <input type="number" class="form-control" id="reps" name="reps">
-            </div>
-            <div class="form-group">
-              <label for="sets">Sets:</label>
-              <input type="number" class="form-control" id="sets" name="sets">
-            </div>
-            <button type="submit" class="btn btn-primary">Add Entry</button>
-          </form>
+        <div class="col-md-6" id="lift-entry-forms">
+          <!-- Lift entry forms will be generated here -->
         </div>
         <div class="col-md-6">
           <h5>Your Lifts:</h5>
           <div id="charts-container">
-            {% for lift in lift_data %}
-            <div class="card mt-4">
-              <div class="card-body">
-                <h5 class="card-title">{{ lift.lift_name }}</h5>
-                <canvas id="{{ lift.lift_name }}-chart" class="chart"></canvas>
-              </div>
-            </div>
-            {% endfor %}
+            <!-- Lift charts will be generated here -->
           </div>
         </div>
       </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+   
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
+        const workoutALifts = ['squat', 'benchpress', 'row'];
+        const workoutBLifts = ['squat', 'ohp', 'deadlift'];
 
         function createChart(ctx, labels, data) {
-            const minWeight = Math.min(...data) - 10;
+          const minWeight = Math.min(...data) - 10;
             const dateObjects = labels.map(label => new Date(label));
             const stepSize = Math.ceil(dateObjects.length / 10);
             const simplifiedLabels = dateObjects.map((label, index) => {
@@ -100,110 +69,104 @@
                 }
             });
         }
-        function displayWorkout(workout) {
-          const workoutA = ['SQUAT', 'BENCHPRESS', 'ROW'];
-          const workoutB = ['SQUAT', 'OHP', 'DEADLIFT'];
-          const lifts = workout === 'A' ? workoutA : workoutB;
 
-          // Update the lift dropdown
-          const liftDropdown = document.getElementById('lift-dropdown');
-          liftDropdown.innerHTML = `
-              <option value="">Choose a lift</option>
-              ${lifts.map(lift => `<option value="${lift}">${lift}</option>`).join('')}
-          `;
-
-          // Update the charts container
-          const chartsContainer = document.getElementById('charts-container');
-          chartsContainer.innerHTML = `
-              ${lifts.map(lift => {
-                  const liftData = liftData.find(item => item.lift_name === lift);
-                  return `
-                      <div class="card mt-4">
-                          <div class="card-body">
-                              <h5 class="card-title">${lift}</h5>
-                              <canvas id="${lift}-chart" class="chart"></canvas>
-                          </div>
-                      </div>
-                  `;
-              }).join('')}
-          `;
-
-          // Create charts for the displayed lifts
-          lifts.forEach(lift => {
-              const liftData = liftData.find(item => item.lift_name === lift);
-              const ctx = document.getElementById(`${lift}-chart`).getContext('2d');
-              createChart(ctx, liftData.dates, liftData.weights);
-          });
-      }
-
-        // Loop through each lift data and create the chart
-        const liftData = {{ lift_data | tojson }};
-        liftData.forEach(lift => {
-            const ctx = document.getElementById(`${lift.lift_name}-chart`).getContext('2d');
-            createChart(ctx, lift.dates, lift.weights);
-        });
-        document.getElementById('lift-dropdown').addEventListener('change', function () {
-        const liftSelection = this.value;
-        const liftSessionForm = document.getElementById('lift-session-form');
-        const selectedLiftTitle = document.getElementById('selected-lift');
-
-        if (liftSelection) {
-          liftSessionForm.style.display = 'block';
-          selectedLiftTitle.textContent = liftSelection;
-        } else {
-          liftSessionForm.style.display = 'none';
-          selectedLiftTitle.textContent = '';
+        function createLiftEntryForm(liftName) {
+            return `
+                <form class="lift-session-form mb-4" data-lift="${liftName}">
+                    <h5>${liftName}</h5>
+                    <div class="form-group">
+                        <label for="${liftName}-weight">Weight:</label>
+                        <input type="number" class="form-control" id="${liftName}-weight" name="weight">
+                    </div>
+                    <div class="form-group">
+                        <label for="${liftName}-reps">Reps:</label>
+                        <input type="number" class="form-control" id="${liftName}-reps" name="reps">
+                    </div>
+                    <div class="form-group">
+                        <label for="${liftName}-sets">Sets:</label>
+                        <input type="number" class="form-control" id="${liftName}-sets" name="sets">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Entry</button>
+                </form>
+            `;
         }
-      });
 
-      // Handle form submission
-      document.getElementById('lift-session-form').addEventListener('submit', function (event) {
-  event.preventDefault();
+        function updateLiftFormsAndCharts(workoutLifts) {
+            const liftEntryFormsContainer = document.getElementById('lift-entry-forms');
+            const chartsContainer = document.getElementById('charts-container');
 
-  // Gather form data
-  const liftName = document.getElementById('selected-lift').textContent;
-  const weight = document.getElementById('weight').value;
-  const reps = document.getElementById('reps').value;
-  const sets = document.getElementById('sets').value;
+            liftEntryFormsContainer.innerHTML = workoutLifts.map(createLiftEntryForm).join('');
+            chartsContainer.innerHTML = '';
 
-  // Validate and process form data (e.g., send to server, update chart, etc.)
-  if (liftName && weight && reps && sets) {
-    // Send data to the server using AJAX
-    fetch('/addentry', {
-      method: 'POST',
-      body: JSON.stringify({
-        lift: liftName,
-        weight: weight,
-        reps: reps,
-        sets: sets,
-        date: null // You can also get the date from the form if needed
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      credentials: 'same-origin'
-    }).then(response => {
-      if (response.ok) {
-        // Reset form fields
-        document.getElementById('weight').value = '';
-        document.getElementById('reps').value = '';
-        document.getElementById('sets').value = '';
+            workoutLifts.forEach(lift => {
+                const liftData = lift_data.find(item => item.lift_name === lift);
+                const ctx = document.createElement('canvas');
+                ctx.id = `${lift}-chart`;
+                ctx.classList.add('chart');
+                chartsContainer.appendChild(ctx);
+                createChart(ctx.getContext('2d'), liftData.dates, liftData.weights);
+            });
 
-        // Update the chart and/or refresh the page
-        // ...
-        location.reload();
-      } else {
-        alert('Failed to add entry. Please try again.');
-      }
-    }).catch(error => {
-      console.error('Error:', error);
-      alert('Failed to add entry. Please try again.');
-    });
-  } else {
-    alert('Please fill out all fields.');
-  }
-});
-      </script>
-  </body>
+            document.querySelectorAll('.lift-session-form').forEach(form => {
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+
+                    const liftName = this.dataset.lift;
+                    const weight = this.querySelector('input[name="weight"]').value;
+                    const reps = this.querySelector('input[name="reps"]').value;
+                    const sets = this.querySelector('input[name="sets"]').value;
+
+                    if (liftName && weight && reps && sets) {
+                        fetch('/addentry', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                                lift: liftName,
+                                weight: weight,
+                                reps: reps,
+                                sets: sets,
+                                date: null // You can also get the date from the form if needed
+                            }),
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            credentials: 'same-origin'
+                        }).then(response => {
+                            if (response.ok) {
+                                this.querySelector('input[name="weight"]').value = '';
+                                this.querySelector('input[name="reps"]').value = '';
+                                this.querySelector('input[name="sets"]').value = '';
+
+                                location.reload();
+                            } else {
+                                alert('Failed to add entry. Please try again.');
+                            }
+                        }).catch(error => {
+                            console.error('Error:', error);
+                            alert('Failed to add entry. Please try again.');
+                        });
+                    } else {
+                        alert('Please fill out all fields.');
+                    }
+                });
+            });
+        }
+
+        document.getElementById('workout-dropdown').addEventListener('change', function () {
+            const workout = this.value;
+
+            if (workout === 'A') {
+                updateLiftFormsAndCharts(workoutALifts);
+            } else if (workout === 'B') {
+                updateLiftFormsAndCharts(workoutBLifts);
+            } else {
+                document.getElementById('lift-entry-forms').innerHTML = '';
+                document.getElementById('charts-container').innerHTML = '';
+            }
+        });
+
+        const initialLiftData = JSON.parse('{{ lift_data | tojson | escapejs}}');
+        //document.getElementById('weekly-lifts').style.display = 'none';
+    </script>
+</body>
 </html>
