@@ -178,27 +178,32 @@
         });
 
         const initialLiftData = {{ lift_data | tojson }};
-        //document.getElementById('weekly-lifts').style.display = 'none';
     </script>
-    <!-- Add this script section before the end of the body tag -->
     <script>
         function submitHandler(event) {
             event.preventDefault();
+            const form = event.target;
+            const liftName = form.dataset.lift;
+            const weight = form.querySelector('input[name="weight"]').value;
+            const reps = form.querySelector('input[name="reps"]').value;
+            const sets = form.querySelector('input[name="sets"]').value;
+            const csrfToken = form.querySelector('input[name="csrf_token"]').value;
+    
             let data = {
-                lift: $("#workoutLift").val(),
-                weight: $("#workoutWeight").val(),
-                reps: $("#workoutReps").val(),
-                sets: $("#workoutSets").val(),
-                date: $("#workoutDate").val()
+                lift: liftName,
+                weight: weight,
+                reps: reps,
+                sets: sets,
+                date: null
             };
-
+    
             $.ajax({
                 type: "POST",
                 url: "/addentry",
                 data: JSON.stringify(data),
                 contentType: "application/json",
                 beforeSend: function (xhr) {
-                    xhr.setRequestHeader("X-CSRFToken", $("input[name=csrf_token]").val());
+                    xhr.setRequestHeader("X-CSRFToken", csrfToken);
                 },
                 success: function (response) {
                     console.log(response);
@@ -208,9 +213,9 @@
                 }
             });
         }
-
+    
         // Attach the submitHandler to the form's submit event
-        $("#workoutForm").submit(submitHandler);
+        $(document).on('submit', '.lift-session-form', submitHandler);
     </script>
 
 </body>
