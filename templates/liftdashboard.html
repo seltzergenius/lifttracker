@@ -180,5 +180,38 @@
         const initialLiftData = {{ lift_data | tojson }};
         //document.getElementById('weekly-lifts').style.display = 'none';
     </script>
+    <!-- Add this script section before the end of the body tag -->
+    <script>
+        function submitHandler(event) {
+            event.preventDefault();
+            let data = {
+                lift: $("#workoutLift").val(),
+                weight: $("#workoutWeight").val(),
+                reps: $("#workoutReps").val(),
+                sets: $("#workoutSets").val(),
+                date: $("#workoutDate").val()
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/addentry",
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader("X-CSRFToken", $("input[name=csrf_token]").val());
+                },
+                success: function (response) {
+                    console.log(response);
+                    if (response.status === "success") {
+                        location.reload();
+                    }
+                }
+            });
+        }
+
+        // Attach the submitHandler to the form's submit event
+        $("#workoutForm").submit(submitHandler);
+    </script>
+
 </body>
 </html>
