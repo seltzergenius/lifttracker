@@ -210,7 +210,13 @@
                     if (response.status === "success") {
                         location.reload();
                     }
-                }
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error:", error);
+                    console.error("Status:", status);
+                    console.error("XHR:", xhr);
+                    alert("Error: " + error + "\nStatus: " + status);
+                }  
             });
         }
     
