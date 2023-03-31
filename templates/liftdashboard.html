@@ -177,42 +177,8 @@
             }
         });
 
-        const initialLiftData = {{ lift_data | tojson }};
+        const initialLiftData = JSON.parse('{{ lift_data | tojson | safe }}');
     </script>
-<script>
-    $("#addLiftForm").submit(function(event) {
-        event.preventDefault();
-        let data = {
-            lift: $("#lift").val(),
-            weight: $("#weight").val(),
-            reps: $("#reps").val(),
-            sets: $("#sets").val(),
-            date: $("#date").val()
-        };
-
-        $.ajax({
-            type: "POST",
-            url: "/addentry",
-            data: JSON.stringify(data),
-            contentType: "application/json",
-            beforeSend: function(xhr) {
-                xhr.setRequestHeader("X-CSRFToken", $("input[name=csrf_token]").val());
-            },
-            success: function(response) {
-            console.log(response);
-            if (response.status === "success") {
-                location.href = "/liftdashboard";
-            } else {
-                alert("Error adding entry. Please try again.");
-            }
-        },
-        error: function(xhr, status, error) {
-            console.error("Error:", error);
-            console.error("Status:", status);
-            console.error("XHR:", xhr);
-        }
-    });
-});
 </script>
 </body>
 </html>

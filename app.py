@@ -140,8 +140,14 @@ def addentry():
             date_obj = date.today()
         user_id = current_user.id
         new_entry(user_id, lift, weight, reps, sets, date_obj)
-        return jsonify({'status': 'success'})
+
+        if request.is_json:
+            return jsonify({'status': 'success'})
+        else:
+            return redirect(url_for('main'))
+
     return render_template('addentry.html')
+
 
 
 @app.route("/updateentry", methods=['POST'])
