@@ -129,13 +129,11 @@ def main():
 @login_required
 def addentry():
     if request.method == 'POST':
-        data = request.get_json()
-        print(f"Data received: {data}")
-        lift = data['lift']
-        weight = data['weight']
-        reps = data['reps']
-        sets = data['sets']
-        date_str = data.get('date', None)
+        lift = request.form['lift']
+        weight = request.form['weight']
+        reps = request.form['reps']
+        sets = request.form['sets']
+        date_str = request.form.get('date', None)
         if date_str:
             date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
         else:
@@ -144,6 +142,7 @@ def addentry():
         new_entry(user_id, lift, weight, reps, sets, date_obj)
         return jsonify({'status': 'success'})
     return render_template('addentry.html')
+
 
 @app.route("/updateentry", methods=['POST'])
 @login_required
