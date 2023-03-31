@@ -47,38 +47,40 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-      $("#addLiftForm").submit(function (e) {
-        e.preventDefault();
-
-        let data = {
-          'lift': $('#lift').val(),
-          'weight': $('#weight').val(),
-          'sets': $('#sets').val(),
-          'reps': $('#reps').val(),
-          'date': $('#date').val()
-        };
-
-        $.ajax({
-            type: "POST",
-            url: "/addentry",
-            data: JSON.stringify(data),
-            contentType: "application/json",
-            beforeSend: function (xhr) {
-                xhr.setRequestHeader("X-CSRFToken", $("input[name=csrf_token]").val());
-            },
-            success: function (response) {
-              if (response.status === 'success') {
-                  alert('Entry added successfully');
-                  window.location.href = '/';
-              } else {
-                  alert('Error adding entry');
-              }
-            },
-            error: function (response) {
-                alert('Error adding entry');
-            }
-        });
-    });
-</script>
+      $(document).ready(function() {
+          $("#addLiftForm").on("submit", function(e) {
+              e.preventDefault();
+  
+              let data = {
+                  'lift': $('#lift').val(),
+                  'weight': $('#weight').val(),
+                  'sets': $('#sets').val(),
+                  'reps': $('#reps').val(),
+                  'date': $('#date').val()
+              };
+  
+              $.ajax({
+                  type: "POST",
+                  url: "/addentry",
+                  data: JSON.stringify(data),
+                  contentType: "application/json",
+                  beforeSend: function(xhr) {
+                      xhr.setRequestHeader("X-CSRFToken", $("input[name=csrf_token]").val());
+                  },
+                  success: function(response) {
+                      if (response.status === 'success') {
+                          alert('Entry added successfully');
+                          window.location.href = '/';
+                      } else {
+                          alert('Error adding entry');
+                      }
+                  },
+                  error: function(response) {
+                      alert('Error adding entry');
+                  }
+              });
+          });
+      });
+  </script>  
 </body>
 </html>
