@@ -129,24 +129,33 @@ def main():
 @login_required
 def addentry():
     if request.method == 'POST':
-        lift = request.form['lift']
-        weight = request.form['weight']
-        reps = request.form['reps']
-        sets = request.form['sets']
-        date_str = request.form.get('date', None)
+        if request.is_json:
+            data = request.get_json()
+        else:
+            data = {
+                'lift': request.form['lift'],
+                'weight': request.form['weight'],
+                'sets': request.form['sets'],
+                'reps': request.form['reps'],
+                'date': request.form.get('date', None)
+            }
+
+        lift = data['lift']
+        weight = int(data['weight'])
+        sets = int(data['sets'])
+        reps = int(data['reps'])
+        date_str = data['date']
+
         if date_str:
             date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
         else:
             date_obj = date.today()
+
         user_id = current_user.id
-        new_entry(user_id, lift, weight, reps, sets, date_obj)
-
-        if request.is_json:
-            return jsonify({'status': 'success'})
-        else:
-            return redirect(url_for('main'))
-
+        new_entry(user_id, lift, weight, sets, reps, date_obj)
+        return jsonify({'status': 'success'})
     return render_template('addentry.html')
+
 
 
 
