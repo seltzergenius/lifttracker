@@ -179,50 +179,40 @@
 
         const initialLiftData = {{ lift_data | tojson }};
     </script>
-    <script>
-        function submitHandler(event) {
-            event.preventDefault();
-            const form = event.target;
-            const liftName = form.dataset.lift;
-            const weight = form.querySelector('input[name="weight"]').value;
-            const reps = form.querySelector('input[name="reps"]').value;
-            const sets = form.querySelector('input[name="sets"]').value;
-            const csrfToken = form.querySelector('input[name="csrf_token"]').value;
-    
-            let data = {
-                lift: liftName,
-                weight: weight,
-                reps: reps,
-                sets: sets,
-                date: null
-            };
-    
-            $.ajax({
-                type: "POST",
-                url: "/addentry",
-                data: JSON.stringify(data),
-                contentType: "application/json",
-                beforeSend: function (xhr) {
-                    xhr.setRequestHeader("X-CSRFToken", csrfToken);
-                },
-                success: function (response) {
-                    console.log(response);
-                    if (response.status === "success") {
-                        location.reload();
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error("Error:", error);
-                    console.error("Status:", status);
-                    console.error("XHR:", xhr);
-                    alert("Error: " + error + "\nStatus: " + status);
-                }  
-            });
-        }
-    
-        // Attach the submitHandler to the form's submit event
-        $(document).on('submit', '.lift-session-form', submitHandler);
-    </script>
+<script>
+    $("#addLiftForm").submit(function(event) {
+        event.preventDefault();
+        let data = {
+            lift: $("#lift").val(),
+            weight: $("#weight").val(),
+            reps: $("#reps").val(),
+            sets: $("#sets").val(),
+            date: $("#date").val()
+        };
 
+        $.ajax({
+            type: "POST",
+            url: "/addentry",
+            data: JSON.stringify(data),
+            contentType: "application/json",
+            beforeSend: function(xhr) {
+                xhr.setRequestHeader("X-CSRFToken", $("input[name=csrf_token]").val());
+            },
+            success: function(response) {
+            console.log(response);
+            if (response.status === "success") {
+                location.href = "/liftdashboard";
+            } else {
+                alert("Error adding entry. Please try again.");
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error("Error:", error);
+            console.error("Status:", status);
+            console.error("XHR:", xhr);
+        }
+    });
+});
+</script>
 </body>
 </html>
