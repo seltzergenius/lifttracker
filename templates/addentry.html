@@ -68,16 +68,16 @@
                       xhr.setRequestHeader("X-CSRFToken", $("input[name=csrf_token]").val());
                   },
                   success: function(response) {
-                      if (response.status === 'success') {
-                          alert('Entry added successfully');
-                          window.location.href = '/';
-                      } else {
-                          alert('Error adding entry');
-                      }
+                    if (response.status === 'success') {
+                        alert('Entry added successfully');
+                        window.location.href = '/';
+                    } else {
+                        alert('Error adding entry: ' + response.message);
+                    }
                   },
-                  error: function(response) {
-                      alert('Error adding entry');
-                  }
+                  error: function(xhr, status, error) {
+                      alert('An error occurred: ' + error);
+                }
               });
           });
       });

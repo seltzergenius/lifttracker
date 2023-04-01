@@ -131,6 +131,7 @@ def addentry():
     if request.method == 'POST':
         if request.is_json:
             data = request.get_json()
+            print(f"Received data: {data}")  # Add this print statement
         else:
             data = {
                 'lift': request.form['lift'],

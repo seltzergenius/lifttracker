@@ -134,23 +134,19 @@
                             credentials: 'same-origin'
                         }).then(response => {
                             if (response.ok) {
-                                const successMessage = this.querySelector('.success-message');
-                                successMessage.textContent = `${liftName} entry added successfully!`;
-                                successMessage.style.display = 'block';
-
-                                this.querySelector('input[name="weight"]').value = '';
-                                this.querySelector('input[name="reps"]').value = '';
-                                this.querySelector('input[name="sets"]').value = '';
-
-                                setTimeout(() => {
-                                successMessage.style.display = 'none';
-                                }, 3000);
+                                response.json().then(data => {
+                                    if (data.status === 'success') {
+                                        alert('Entry added successfully');
+                                        window.location.reload();
+                                    } else {
+                                        alert('Error adding entry: ' + data.message);
+                                    }
+                                });
                             } else {
-                                alert('Failed to add entry. Please try again.');
+                                alert('An error occurred: ' + response.statusText);
                             }
                         }).catch(error => {
-                            console.error('Error:', error);
-                            alert('Failed to add entry. Please try again.');
+                            alert('An error occurred: ' + error);
                         });
                     } else {
                         alert('Please fill out all fields.');
