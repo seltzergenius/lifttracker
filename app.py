@@ -1,6 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify
+from flask import Flask, render_template, request, redirect, url_for, jsonify, make_response
 from datetime import date, datetime
-from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey, delete
+from sqlalchemy import create_engine, Column, Integer, String, Date, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from flask_login import UserMixin, LoginManager, login_user, logout_user, login_required, current_user
@@ -145,17 +145,19 @@ def addentry():
         sets = int(data['sets'])
         reps = int(data['reps'])
         date_str = data['date']
-
         if date_str:
-            date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
+                date_obj = datetime.strptime(date_str, "%Y-%m-%d").date()
         else:
             date_obj = date.today()
 
         user_id = current_user.id
-        new_entry(user_id, lift, weight, sets, reps, date_obj)
-        return jsonify({'status': 'success'})
+        try:
+            new_entry(user_id, lift, weight, sets, reps, date_obj)
+            return jsonify({'status': 'success'})
+        except Exception as e:
+            print(f"Error adding entry: {e}")
+            return make_response(jsonify({'status': 'error', 'message': 'Error adding entry'}), 400)
     return render_template('addentry.html')
-
 
 
 
