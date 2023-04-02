@@ -88,6 +88,16 @@
             }
         });
 
+        function attachSubmitListener() {
+    const forms = document.getElementsByClassName('lift-session-form');
+    for (const form of forms) {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            submitFormData(form);
+        });
+    }
+}
+
         function updateLiftFormsAndCharts(lifts) {
     // Clear existing forms and charts
     document.getElementById('lift-entry-forms').innerHTML = '';
@@ -130,21 +140,15 @@
             createChart(ctx, liftObj.dates, liftObj.weights);
         }
     }
-    function attachSubmitListener() {
-    const forms = document.getElementsByClassName('lift-session-form');
-    for (const form of forms) {
-        form.addEventListener('submit', function (event) {
-            event.preventDefault();
-            submitFormData(form);
-        });
-    }
-}
+
 
     attachSubmitListener(); // Attach submit event listeners to newly created forms
 }
 
 
         const initialLiftData = JSON.parse('{{ lift_data | tojson | safe }}');
+        // Add this line at the end of the script, after the initialLiftData assignment
+        updateLiftFormsAndCharts(workoutALifts);
     </script>
 </body>
 </html>
