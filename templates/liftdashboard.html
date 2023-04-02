@@ -130,6 +130,15 @@
             createChart(ctx, liftObj.dates, liftObj.weights);
         }
     }
+    function attachSubmitListener() {
+    const forms = document.getElementsByClassName('lift-session-form');
+    for (const form of forms) {
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            submitFormData(form);
+        });
+    }
+}
 
     attachSubmitListener(); // Attach submit event listeners to newly created forms
 }
