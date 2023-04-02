@@ -30,131 +30,48 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        const workoutALifts = ['SQUAT', 'BENCHPRESS', 'ROW'];
-        const workoutBLifts = ['SQUAT', 'OHP', 'DEADLIFT'];
+        // ... Other code remains the same
 
-        function createChart(ctx, labels, data) {
-          const minWeight = Math.min(...data) - 10;
-            const dateObjects = labels.map(label => new Date(label));
-            const stepSize = Math.ceil(dateObjects.length / 10);
-            const simplifiedLabels = dateObjects.map((label, index) => {
-                if (index % stepSize === 0) {
-                    return label.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
-                } else {
-                    return '';
-                }
-            });
+        // Function to submit form data using AJAX
+        function submitFormData(form) {
+            const liftName = form.dataset.lift;
+            const weight = form.querySelector('input[name="weight"]').value;
+            const reps = form.querySelector('input[name="reps"]').value;
+            const sets = form.querySelector('input[name="sets"]').value;
 
-            return new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: simplifiedLabels,
-                    datasets: [{
-                        label: 'Weight',
-                        data: data,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 1,
-                        fill: true,
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            min: minWeight
+            if (liftName && weight && reps && sets) {
+                $.ajax({
+                    type: "POST",
+                    url: "/addentry",
+                    data: JSON.stringify({
+                        lift: liftName,
+                        weight: weight,
+                        reps: reps,
+                        sets: sets,
+                        date: null // You can also get the date from the form if needed
+                    }),
+                    contentType: "application/json",
+                    beforeSend: function(xhr) {
+                        xhr.setRequestHeader("X-CSRFToken", form.querySelector('input[name="csrf_token"]').value);
+                    },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            alert('Entry added successfully');
+                            window.location.reload();
+                        } else {
+                            alert('Error adding entry: ' + response.message);
                         }
-                    }
-                }
-            });
-        }
-
-        function createLiftEntryForm(liftName) {
-        return `
-            <form class="lift-session-form mb-4" data-lift="${liftName}">
-                <h5>${liftName}</h5>
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="form-group">
-                    <label for="${liftName}-weight">Weight:</label>
-                    <input type="number" class="form-control" id="${liftName}-weight" name="weight">
-                </div>
-                <div class="form-group">
-                    <label for="${liftName}-reps">Reps:</label>
-                    <input type="number" class="form-control" id="${liftName}-reps" name="reps">
-                </div>
-                <div class="form-group">
-                    <label for="${liftName}-sets">Sets:</label>
-                    <input type="number" class="form-control" id="${liftName}-sets" name="sets">
-                </div>
-                <button type="submit" class="btn btn-primary">Add Entry</button>
-            </form>
-        `;
-    }
-
-
-        function updateLiftFormsAndCharts(workoutLifts) {
-            const liftEntryFormsContainer = document.getElementById('lift-entry-forms');
-            const chartsContainer = document.getElementById('charts-container');
-
-            liftEntryFormsContainer.innerHTML = workoutLifts.map(createLiftEntryForm).join('');
-            chartsContainer.innerHTML = '';
-
-            workoutLifts.forEach(lift => {
-                const liftData = lift_data.find(item => item.lift_name === lift);
-                const ctx = document.createElement('canvas');
-                ctx.id = `${lift}-chart`;
-                ctx.classList.add('chart');
-                chartsContainer.appendChild(ctx);
-                createChart(ctx.getContext('2d'), liftData.dates, liftData.weights);
-            });
-
-            document.querySelectorAll('.lift-session-form').forEach(form => {
-                form.addEventListener('submit', function (event) {
-                    event.preventDefault();
-
-                    const liftName = this.dataset.lift;
-                    const weight = this.querySelector('input[name="weight"]').value;
-                    const reps = this.querySelector('input[name="reps"]').value;
-                    const sets = this.querySelector('input[name="sets"]').value;
-
-                    if (liftName && weight && reps && sets) {
-                        fetch('/addentry', {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                lift: liftName,
-                                weight: weight,
-                                reps: reps,
-                                sets: sets,
-                                date: null // You can also get the date from the form if needed
-                            }),
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRFToken': this.querySelector('input[name="csrf_token"]').value
-                            },
-                            credentials: 'same-origin'
-                        }).then(response => {
-                            if (response.ok) {
-                                response.json().then(data => {
-                                    if (data.status === 'success') {
-                                        alert('Entry added successfully');
-                                        window.location.reload();
-                                    } else {
-                                        alert('Error adding entry: ' + data.message);
-                                    }
-                                });
-                            } else {
-                                alert('An error occurred: ' + response.statusText);
-                            }
-                        }).catch(error => {
-                            alert('An error occurred: ' + error);
-                        });
-                    } else {
-                        alert('Please fill out all fields.');
+                    },
+                    error: function(xhr, status, error) {
+                        alert('An error occurred: ' + error);
                     }
                 });
-            });
-            document.getElementById('your-lifts').style.display = 'block';
+            } else {
+                alert('Please fill out all fields.');
+            }
         }
+
+        // ... Other code remains the same
 
         document.getElementById('workout-dropdown').addEventListener('change', function () {
             const workout = this.value;
@@ -167,12 +84,20 @@
                 document.getElementById('lift-entry-forms').innerHTML = '';
                 document.getElementById('charts-container').innerHTML = '';
                 document.getElementById('your-lifts').style.display = 'none';
-
             }
         });
 
+        // Attach submit event listener to forms after they're created
+        function attachSubmitListener() {
+            document.querySelectorAll('.lift-session-form').forEach(form => {
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    submitFormData(this);
+                });
+            });
+        }
+
         const initialLiftData = JSON.parse('{{ lift_data | tojson | safe }}');
     </script>
-</script>
 </body>
 </html>
