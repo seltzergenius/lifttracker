@@ -166,8 +166,8 @@ def addentry():
 @app.route("/updateentry", methods=['POST'])
 @login_required
 def update_entry():
-    if request.is_json:
-        data = request.get_json()
+    data = request.get_json()
+    if data:
         date = datetime.strptime(data['date'], "%Y-%m-%d").date()
         lift = data['lift']
         weight = int(data['weight'])
