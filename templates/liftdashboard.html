@@ -33,6 +33,30 @@
         const workoutALifts = ['SQUAT', 'BENCHPRESS', 'ROW'];
         const workoutBLifts = ['SQUAT', 'OHP', 'DEADLIFT'];
 
+        function createChart(ctx, dates, weights) {
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        {
+                            label: 'Weight',
+                            data: weights,
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+    }
 
         // Function to submit form data using AJAX
         function submitFormData(form) {
@@ -88,62 +112,63 @@
             }
         });
 
-        function attachSubmitListener() {
-    const forms = document.getElementsByClassName('lift-session-form');
-    for (const form of forms) {
-        form.addEventListener('submit', function (event) {
-            event.preventDefault();
-            submitFormData(form);
-        });
-    }
-}
+
 
         function updateLiftFormsAndCharts(lifts) {
-    // Clear existing forms and charts
-    document.getElementById('lift-entry-forms').innerHTML = '';
-    document.getElementById('charts-container').innerHTML = '';
+            // Clear existing forms and charts
+            document.getElementById('lift-entry-forms').innerHTML = '';
+            document.getElementById('charts-container').innerHTML = '';
 
-    // Create lift entry forms and charts
-    for (const lift of lifts) {
-        // Create form
-        const form = document.createElement('form');
-        form.className = 'lift-session-form';
-        form.dataset.lift = lift;
-        form.innerHTML = `
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="form-group">
-                <label for="${lift}-weight">Weight for ${lift}:</label>
-                <input type="number" id="${lift}-weight" name="weight" class="form-control">
-            </div>
-            <div class="form-group">
-                <label for="${lift}-sets">Sets:</label>
-                <input type="number" id="${lift}-sets" name="sets" class="form-control">
-            </div>
-            <div class="form-group">
-                <label for="${lift}-reps">Reps:</label>
-                <input type="number" id="${lift}-reps" name="reps" class="form-control">
-            </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
-        `;
-        document.getElementById('lift-entry-forms').appendChild(form);
+            function attachSubmitListener() {
+            const forms = document.getElementsByClassName('lift-session-form');
+            for (const form of forms) {
+                form.addEventListener('submit', function (event) {
+                    event.preventDefault();
+                    submitFormData(form);
+                });
+            }
+            }
+            // Create lift entry forms and charts
+            for (const lift of lifts) {
+                // Create form
+                const form = document.createElement('form');
+                form.className = 'lift-session-form';
+                form.dataset.lift = lift;
+                form.innerHTML = `
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="form-group">
+                        <label for="${lift}-weight">Weight for ${lift}:</label>
+                        <input type="number" id="${lift}-weight" name="weight" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="${lift}-sets">Sets:</label>
+                        <input type="number" id="${lift}-sets" name="sets" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="${lift}-reps">Reps:</label>
+                        <input type="number" id="${lift}-reps" name="reps" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                `;
+                document.getElementById('lift-entry-forms').appendChild(form);
 
-        // Create chart container
-        const chartContainer = document.createElement('div');
-        chartContainer.className = 'mb-3';
-        chartContainer.innerHTML = `<canvas id="${lift}-chart" width="300" height="150"></canvas>`;
-        document.getElementById('charts-container').appendChild(chartContainer);
+                // Create chart container
+                const chartContainer = document.createElement('div');
+                chartContainer.className = 'mb-3';
+                chartContainer.innerHTML = `<canvas id="${lift}-chart" width="300" height="150"></canvas>`;
+                document.getElementById('charts-container').appendChild(chartContainer);
 
-        // Get lift data and create chart
-        const liftObj = initialLiftData.find(obj => obj.lift_name === lift);
-        if (liftObj) {
-            const ctx = document.getElementById(`${lift}-chart`).getContext('2d');
-            createChart(ctx, liftObj.dates, liftObj.weights);
-        }
+                // Get lift data and create chart
+                const liftObj = initialLiftData.find(obj => obj.lift_name === lift);
+                if (liftObj) {
+                    const ctx = document.getElementById(`${lift}-chart`).getContext('2d');
+                    createChart(ctx, liftObj.dates, liftObj.weights);
+                }
+            }
+
+
+        attachSubmitListener(); // Attach submit event listeners to newly created forms
     }
-
-
-    attachSubmitListener(); // Attach submit event listeners to newly created forms
-}
 
 
         const initialLiftData = JSON.parse('{{ lift_data | tojson | safe }}');

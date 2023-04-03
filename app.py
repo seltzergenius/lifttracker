@@ -7,6 +7,7 @@ from flask_login import UserMixin, LoginManager, login_user, logout_user, login_
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.middleware.proxy_fix import ProxyFix
 from flask_wtf import CSRFProtect
+
 import os
 
 login_manager = LoginManager()
