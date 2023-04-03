@@ -39,29 +39,42 @@
         const workoutBLifts = ['SQUAT', 'OHP', 'DEADLIFT'];
 
         function createChart(ctx, dates, weights) {
+            const minWeight = Math.min(...weights) - 10;
+            const dateObjects = dates.map(date => new Date(date));
+            const stepSize = Math.ceil(dateObjects.length / 10);
+            const simplifiedDates = dateObjects.map((date, index) => {
+                if (index % stepSize === 0) {
+                    return date.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit' });
+                } else {
+                    return '';
+                }
+            });
+
             return new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: dates,
+                    labels: simplifiedDates,
                     datasets: [
                         {
                             label: 'Weight',
                             data: weights,
                             backgroundColor: 'rgba(75, 192, 192, 0.2)',
                             borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1
+                            borderWidth: 1,
+                            fill: true,
                         }
                     ]
                 },
                 options: {
                     scales: {
                         y: {
-                            beginAtZero: true
+                            min: minWeight
                         }
                     }
                 }
             });
-    }
+        }
+
 
         // Function to submit form data using AJAX
         function submitFormData(form) {
